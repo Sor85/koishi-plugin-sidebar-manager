@@ -194,11 +194,11 @@ function cleanOverride(id: string) {
 }
 
 function getOrder(id: string) {
-  return overrides.value[id]?.order ?? ctx.$router.pages[id]?.order ?? 0
+  return overrides.value[id]?.order ?? ctx.$router.pages[id]?.options.order ?? 0
 }
 
 function getPosition(id: string): ActivityPosition {
-  return overrides.value[id]?.position ?? ctx.$router.pages[id]?.position ?? 'top'
+  return overrides.value[id]?.position ?? ctx.$router.pages[id]?.options.position ?? 'top'
 }
 
 function getParent(id: string) {
