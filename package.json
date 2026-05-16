@@ -1,0 +1,73 @@
+{
+  "name": "koishi-plugin-sidebar-manager",
+  "description": "Koishi 控制台侧栏管理插件，支持隐藏、排序和调整侧栏位置。",
+  "version": "0.1.0",
+  "type": "commonjs",
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "dist",
+    "client"
+  ],
+  "license": "MIT",
+  "scripts": {
+    "clean": "shx rm -rf lib dist *.tsbuildinfo",
+    "build": "npm run build:server && npm run build:client",
+    "build:types": "tsc -p tsconfig.json",
+    "build:server": "npm run build:types && tsup src/index.ts --format cjs --sourcemap --out-dir lib --clean false",
+    "build:client": "vite build --config vite.config.mts",
+    "lint": "eslint src client --ext .ts,.vue",
+    "prepublishOnly": "npm run clean && npm run build"
+  },
+  "keywords": [
+    "bot",
+    "chatbot",
+    "koishi",
+    "plugin",
+    "console",
+    "sidebar"
+  ],
+  "koishi": {
+    "public": [
+      "dist"
+    ],
+    "description": "管理 Koishi 控制台侧栏显示、排序和位置。",
+    "service": {
+      "optional": [
+        "console"
+      ]
+    }
+  },
+  "peerDependencies": {
+    "@koishijs/plugin-console": "^5.30.0",
+    "koishi": "^4.18.0"
+  },
+  "peerDependenciesMeta": {
+    "@koishijs/plugin-console": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "@koishijs/console": "^5.30.0"
+  },
+  "devDependencies": {
+    "@koishijs/client": "^5.30.0",
+    "@types/node": "^22.10.1",
+    "@vitejs/plugin-vue": "^5.1.4",
+    "sass": "^1.77.0",
+    "shx": "^0.4.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.10",
+    "vue": "^3.5.12"
+  }
+}

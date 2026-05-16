@@ -1,0 +1,162 @@
+// 侧栏管理页面样式。
+// 使用 Koishi Console 主题变量适配明暗主题。
+.sidebar-manager {
+  height: 100%;
+  overflow: auto;
+  padding: 24px;
+  box-sizing: border-box;
+
+  .summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .summary-card {
+    border: 1px solid var(--k-color-divider);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--k-card-bg);
+  }
+
+  .summary-value {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.2;
+    color: var(--k-text-active);
+  }
+
+  .summary-label {
+    margin-top: 4px;
+    color: var(--k-text-light);
+    font-size: 13px;
+  }
+
+  .toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .search {
+    flex: 1 1 220px;
+    min-width: 0;
+    border: 1px solid var(--k-color-divider);
+    border-radius: 8px;
+    padding: 8px 10px;
+    color: var(--k-text-dark);
+    background: var(--k-card-bg);
+    outline: none;
+  }
+
+  .button {
+    border: 1px solid var(--k-color-divider);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--k-text-dark);
+    background: var(--k-card-bg);
+    cursor: pointer;
+    transition: var(--color-transition);
+  }
+
+  .button:hover {
+    color: var(--k-text-active);
+    border-color: var(--k-text-active);
+  }
+
+  .button.danger:hover {
+    color: var(--k-color-danger);
+    border-color: var(--k-color-danger);
+  }
+
+  .activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .activity-row {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 14px;
+    align-items: center;
+    border: 1px solid var(--k-color-divider);
+    border-radius: 12px;
+    padding: 14px;
+    background: var(--k-card-bg);
+  }
+
+  .activity-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    color: var(--k-text-active);
+    background: var(--k-hover-bg);
+  }
+
+  .activity-icon :deep(svg) {
+    width: 22px;
+    height: 22px;
+  }
+
+  .activity-main {
+    min-width: 0;
+  }
+
+  .activity-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--k-text-dark);
+  }
+
+  .activity-id {
+    margin-top: 4px;
+    font-size: 12px;
+    color: var(--k-text-light);
+  }
+
+  .activity-desc {
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--k-text-normal);
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 2px 8px;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--k-text-light);
+    background: var(--k-hover-bg);
+  }
+
+  .badge.hidden {
+    color: var(--k-color-danger);
+  }
+
+  .activity-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  .empty {
+    border: 1px dashed var(--k-color-divider);
+    border-radius: 12px;
+    padding: 36px;
+    text-align: center;
+    color: var(--k-text-light);
+  }
+}
