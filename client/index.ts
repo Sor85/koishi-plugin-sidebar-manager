@@ -10,7 +10,6 @@ export default function (ctx: Context) {
     id: 'sidebar-manager',
     path: '/sidebar-manager',
     name: '侧栏管理',
-    desc: '管理控制台侧栏显示、排序和位置',
     icon: 'activity:sidebar-manager',
     order: 900,
     authority: 4,
