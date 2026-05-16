@@ -145,6 +145,15 @@
     color: var(--k-color-danger);
   }
 
+  .badge.collected {
+    color: var(--k-text-active);
+  }
+
+  .button:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
+
   .activity-actions {
     display: flex;
     flex-wrap: wrap;

@@ -13,8 +13,8 @@
           <div class="summary-label">侧栏项目</div>
         </div>
         <div class="summary-card">
-          <div class="summary-value">{{ hiddenCount }}</div>
-          <div class="summary-label">已隐藏</div>
+          <div class="summary-value">{{ collectedCount }}</div>
+          <div class="summary-label">已收纳</div>
         </div>
         <div class="summary-card">
           <div class="summary-value">{{ bottomCount }}</div>
@@ -36,23 +36,23 @@
           <div class="activity-main">
             <div class="activity-name">
               {{ activity.name }}
-              <span v-if="isHidden(activity.id)" class="badge hidden">已隐藏</span>
+              <span v-if="isCollected(activity.id)" class="badge collected">已收纳</span>
+              <span v-else-if="isHidden(activity.id)" class="badge hidden">已隐藏</span>
               <span v-else class="badge">{{ getPosition(activity.id) === 'bottom' ? '底部' : '顶部' }}</span>
-              <span v-if="getParent(activity.id)" class="badge">分组：{{ getParentName(activity.id) }}</span>
+              <span v-if="getParent(activity.id) && !isCollected(activity.id)" class="badge">分组：{{ getParentName(activity.id) }}</span>
             </div>
             <div class="activity-id">{{ activity.id }}</div>
             <div v-if="activity.desc" class="activity-desc">{{ activity.desc }}</div>
           </div>
 
           <div class="activity-actions">
-            <button class="button" @click="moveUp(activity.id)">上移</button>
-            <button class="button" @click="moveDown(activity.id)">下移</button>
-            <button class="button" @click="togglePosition(activity.id)">
+            <button class="button" :disabled="isCollected(activity.id)" @click="moveUp(activity.id)">上移</button>
+            <button class="button" :disabled="isCollected(activity.id)" @click="moveDown(activity.id)">下移</button>
+            <button class="button" :disabled="isCollected(activity.id)" @click="togglePosition(activity.id)">
               {{ getPosition(activity.id) === 'bottom' ? '移到顶部' : '移到底部' }}
             </button>
-            <button class="button" @click="clearParent(activity.id)" :disabled="!getParent(activity.id)">取消分组</button>
-            <button class="button" :class="{ danger: !isHidden(activity.id) }" @click="toggleHidden(activity.id)">
-              {{ isHidden(activity.id) ? '显示' : '隐藏' }}
+            <button class="button" @click="toggleCollected(activity.id)">
+              {{ isCollected(activity.id) ? '取消收纳' : '收纳' }}
             </button>
           </div>
         </article>
@@ -67,6 +67,8 @@
 
 import { useConfig, useContext } from '@koishijs/client'
 import { computed, ref } from 'vue'
+
+const SIDEBAR_MANAGER_ID = 'sidebar-manager'
 
 type ActivityPosition = 'top' | 'bottom'
 
@@ -91,7 +93,7 @@ const overrides = computed<Record<string, ActivityOverride>>({
 })
 
 const activities = computed(() => Object.values(ctx.$router.pages)
-  .filter(activity => activity.id !== 'sidebar-manager')
+  .filter(activity => activity.id !== SIDEBAR_MANAGER_ID)
   .sort((left, right) => getOrder(left.id) - getOrder(right.id)))
 
 const filteredActivities = computed(() => {
@@ -104,7 +106,7 @@ const filteredActivities = computed(() => {
   })
 })
 
-const hiddenCount = computed(() => activities.value.filter(activity => isHidden(activity.id)).length)
+const collectedCount = computed(() => activities.value.filter(activity => isCollected(activity.id)).length)
 const bottomCount = computed(() => activities.value.filter(activity => getPosition(activity.id) === 'bottom').length)
 
 function getOverride(id: string) {
@@ -134,16 +136,21 @@ function getParentName(id: string) {
   return parent ? ctx.$router.pages[parent]?.name ?? parent : ''
 }
 
+function isCollected(id: string) {
+  return getParent(id) === SIDEBAR_MANAGER_ID && !isHidden(id)
+}
+
 function isHidden(id: string) {
   return !!overrides.value[id]?.hidden
 }
 
-function toggleHidden(id: string) {
+function toggleCollected(id: string) {
   const override = getOverride(id)
-  if (override.hidden) {
-    delete override.hidden
+  if (isCollected(id)) {
+    delete override.parent
   } else {
-    override.hidden = true
+    override.parent = SIDEBAR_MANAGER_ID
+    delete override.hidden
   }
   cleanOverride(id)
 }
@@ -160,13 +167,6 @@ function togglePosition(id: string) {
   cleanOverride(id)
 }
 
-function clearParent(id: string) {
-  const override = overrides.value[id]
-  if (!override) return
-  delete override.parent
-  cleanOverride(id)
-}
-
 function moveUp(id: string) {
   moveBy(id, -1)
 }
@@ -176,7 +176,7 @@ function moveDown(id: string) {
 }
 
 function moveBy(id: string, offset: number) {
-  const list = activities.value.filter(activity => getPosition(activity.id) === getPosition(id))
+  const list = activities.value.filter(activity => getPosition(activity.id) === getPosition(id) && !isCollected(activity.id))
   const index = list.findIndex(activity => activity.id === id)
   const target = list[index + offset]
   if (!target) return
