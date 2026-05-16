@@ -13,11 +13,11 @@
           <div class="summary-label">侧栏项目</div>
         </div>
         <div class="summary-card">
-          <div class="summary-value">{{ collectedCount }}</div>
+          <div class="summary-value">{{ collectedActivities.length }}</div>
           <div class="summary-label">已收纳</div>
         </div>
         <div class="summary-card">
-          <div class="summary-value">{{ bottomCount }}</div>
+          <div class="summary-value">{{ bottomActivities.length }}</div>
           <div class="summary-label">底部项目</div>
         </div>
       </section>
@@ -27,36 +27,101 @@
         <button class="button danger" @click="resetActivities">重置侧栏</button>
       </section>
 
-      <section v-if="filteredActivities.length" class="activity-list">
-        <article v-for="activity in filteredActivities" :key="activity.id" class="activity-row">
-          <div class="activity-icon">
-            <k-icon :name="activity.icon" />
+      <div v-if="filteredActivities.length" class="activity-sections">
+        <section class="activity-section">
+          <div class="section-title">
+            <h2>顶部侧栏项</h2>
+            <span>{{ topActivities.length }} 项</span>
           </div>
+          <div v-if="topActivities.length" class="activity-list">
+            <article v-for="activity in topActivities" :key="activity.id" class="activity-row">
+              <div class="activity-icon">
+                <k-icon :name="activity.icon" />
+              </div>
 
-          <div class="activity-main">
-            <div class="activity-name">
-              {{ activity.name }}
-              <span v-if="isCollected(activity.id)" class="badge collected">已收纳</span>
-              <span v-else-if="isHidden(activity.id)" class="badge hidden">已隐藏</span>
-              <span v-else class="badge">{{ getPosition(activity.id) === 'bottom' ? '底部' : '顶部' }}</span>
-              <span v-if="getParent(activity.id) && !isCollected(activity.id)" class="badge">分组：{{ getParentName(activity.id) }}</span>
-            </div>
-            <div class="activity-id">{{ activity.id }}</div>
-            <div v-if="activity.desc" class="activity-desc">{{ activity.desc }}</div>
-          </div>
+              <div class="activity-main">
+                <div class="activity-name">
+                  {{ activity.name }}
+                  <span v-if="isHidden(activity.id)" class="badge hidden">已隐藏</span>
+                  <span v-else class="badge">顶部</span>
+                  <span v-if="getParent(activity.id)" class="badge">分组：{{ getParentName(activity.id) }}</span>
+                </div>
+                <div class="activity-id">{{ activity.id }}</div>
+                <div v-if="activity.desc" class="activity-desc">{{ activity.desc }}</div>
+              </div>
 
-          <div class="activity-actions">
-            <button class="button" :disabled="isCollected(activity.id)" @click="moveUp(activity.id)">上移</button>
-            <button class="button" :disabled="isCollected(activity.id)" @click="moveDown(activity.id)">下移</button>
-            <button class="button" :disabled="isCollected(activity.id)" @click="togglePosition(activity.id)">
-              {{ getPosition(activity.id) === 'bottom' ? '移到顶部' : '移到底部' }}
-            </button>
-            <button class="button" @click="toggleCollected(activity.id)">
-              {{ isCollected(activity.id) ? '取消收纳' : '收纳' }}
-            </button>
+              <div class="activity-actions">
+                <button class="button" @click="moveUp(activity.id)">上移</button>
+                <button class="button" @click="moveDown(activity.id)">下移</button>
+                <button class="button" @click="togglePosition(activity.id)">移到底部</button>
+                <button class="button" @click="toggleCollected(activity.id)">收纳</button>
+              </div>
+            </article>
           </div>
-        </article>
-      </section>
+          <div v-else class="empty compact">没有匹配的顶部侧栏项。</div>
+        </section>
+
+        <section class="activity-section">
+          <div class="section-title">
+            <h2>底部侧栏项</h2>
+            <span>{{ bottomActivities.length }} 项</span>
+          </div>
+          <div v-if="bottomActivities.length" class="activity-list">
+            <article v-for="activity in bottomActivities" :key="activity.id" class="activity-row">
+              <div class="activity-icon">
+                <k-icon :name="activity.icon" />
+              </div>
+
+              <div class="activity-main">
+                <div class="activity-name">
+                  {{ activity.name }}
+                  <span v-if="isHidden(activity.id)" class="badge hidden">已隐藏</span>
+                  <span v-else class="badge">底部</span>
+                  <span v-if="getParent(activity.id)" class="badge">分组：{{ getParentName(activity.id) }}</span>
+                </div>
+                <div class="activity-id">{{ activity.id }}</div>
+                <div v-if="activity.desc" class="activity-desc">{{ activity.desc }}</div>
+              </div>
+
+              <div class="activity-actions">
+                <button class="button" @click="moveUp(activity.id)">上移</button>
+                <button class="button" @click="moveDown(activity.id)">下移</button>
+                <button class="button" @click="togglePosition(activity.id)">移到顶部</button>
+                <button class="button" @click="toggleCollected(activity.id)">收纳</button>
+              </div>
+            </article>
+          </div>
+          <div v-else class="empty compact">没有匹配的底部侧栏项。</div>
+        </section>
+
+        <section class="activity-section">
+          <div class="section-title">
+            <h2>已收纳</h2>
+            <span>{{ collectedActivities.length }} 项</span>
+          </div>
+          <div v-if="collectedActivities.length" class="activity-list">
+            <article v-for="activity in collectedActivities" :key="activity.id" class="activity-row">
+              <div class="activity-icon">
+                <k-icon :name="activity.icon" />
+              </div>
+
+              <div class="activity-main">
+                <div class="activity-name">
+                  {{ activity.name }}
+                  <span class="badge collected">已收纳</span>
+                </div>
+                <div class="activity-id">{{ activity.id }}</div>
+                <div v-if="activity.desc" class="activity-desc">{{ activity.desc }}</div>
+              </div>
+
+              <div class="activity-actions">
+                <button class="button" @click="toggleCollected(activity.id)">取消收纳</button>
+              </div>
+            </article>
+          </div>
+          <div v-else class="empty compact">没有匹配的已收纳侧栏项。</div>
+        </section>
+      </div>
 
       <div v-else class="empty">没有匹配的侧栏项目。</div>
     </div>
@@ -106,8 +171,15 @@ const filteredActivities = computed(() => {
   })
 })
 
-const collectedCount = computed(() => activities.value.filter(activity => isCollected(activity.id)).length)
-const bottomCount = computed(() => activities.value.filter(activity => getPosition(activity.id) === 'bottom').length)
+const topActivities = computed(() => filteredActivities.value.filter((activity) => {
+  return !isCollected(activity.id) && getPosition(activity.id) !== 'bottom'
+}))
+
+const bottomActivities = computed(() => filteredActivities.value.filter((activity) => {
+  return !isCollected(activity.id) && getPosition(activity.id) === 'bottom'
+}))
+
+const collectedActivities = computed(() => filteredActivities.value.filter(activity => isCollected(activity.id)))
 
 function getOverride(id: string) {
   return overrides.value[id] ??= {}
@@ -176,7 +248,9 @@ function moveDown(id: string) {
 }
 
 function moveBy(id: string, offset: number) {
-  const list = activities.value.filter(activity => getPosition(activity.id) === getPosition(id) && !isCollected(activity.id))
+  const list = activities.value.filter((activity) => {
+    return getPosition(activity.id) === getPosition(id) && !isCollected(activity.id)
+  })
   const index = list.findIndex(activity => activity.id === id)
   const target = list[index + offset]
   if (!target) return

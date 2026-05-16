@@ -72,10 +72,39 @@
     border-color: var(--k-color-danger);
   }
 
+  .activity-sections,
   .activity-list {
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .activity-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .activity-section + .activity-section {
+    margin-top: 18px;
+  }
+
+  .section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: var(--k-text-light);
+  }
+
+  .section-title h2 {
+    margin: 0;
+    font-size: 15px;
+    color: var(--k-text-dark);
+  }
+
+  .section-title span {
+    font-size: 12px;
   }
 
   .activity-row {
@@ -167,5 +196,9 @@
     padding: 36px;
     text-align: center;
     color: var(--k-text-light);
+  }
+
+  .empty.compact {
+    padding: 18px;
   }
 }
