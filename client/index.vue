@@ -54,7 +54,7 @@
                 <button class="button" @click="moveUp(activity.id)">上移</button>
                 <button class="button" @click="moveDown(activity.id)">下移</button>
                 <button class="button" @click="togglePosition(activity.id)">移到底部</button>
-                <button class="button" @click="toggleCollected(activity.id)">收纳</button>
+                <button class="button" :disabled="isSidebarManager(activity.id)" @click="toggleCollected(activity.id)">收纳</button>
               </div>
             </article>
           </div>
@@ -87,7 +87,7 @@
                 <button class="button" @click="moveUp(activity.id)">上移</button>
                 <button class="button" @click="moveDown(activity.id)">下移</button>
                 <button class="button" @click="togglePosition(activity.id)">移到顶部</button>
-                <button class="button" @click="toggleCollected(activity.id)">收纳</button>
+                <button class="button" :disabled="isSidebarManager(activity.id)" @click="toggleCollected(activity.id)">收纳</button>
               </div>
             </article>
           </div>
@@ -158,7 +158,6 @@ const overrides = computed<Record<string, ActivityOverride>>({
 })
 
 const activities = computed(() => Object.values(ctx.$router.pages)
-  .filter(activity => activity.id !== SIDEBAR_MANAGER_ID)
   .sort((left, right) => getOrder(left.id) - getOrder(right.id)))
 
 const filteredActivities = computed(() => {
@@ -171,9 +170,12 @@ const filteredActivities = computed(() => {
   })
 })
 
-const topActivities = computed(() => filteredActivities.value.filter((activity) => {
-  return !isCollected(activity.id) && getPosition(activity.id) !== 'bottom'
-}))
+const topActivities = computed(() => filteredActivities.value
+  .filter((activity) => {
+    return !isCollected(activity.id) && getPosition(activity.id) !== 'bottom'
+  })
+  .slice()
+  .reverse())
 
 const bottomActivities = computed(() => filteredActivities.value.filter((activity) => {
   return !isCollected(activity.id) && getPosition(activity.id) === 'bottom'
@@ -208,6 +210,10 @@ function getParentName(id: string) {
   return parent ? ctx.$router.pages[parent]?.name ?? parent : ''
 }
 
+function isSidebarManager(id: string) {
+  return id === SIDEBAR_MANAGER_ID
+}
+
 function isCollected(id: string) {
   return getParent(id) === SIDEBAR_MANAGER_ID && !isHidden(id)
 }
@@ -217,6 +223,7 @@ function isHidden(id: string) {
 }
 
 function toggleCollected(id: string) {
+  if (isSidebarManager(id)) return
   const override = getOverride(id)
   if (isCollected(id)) {
     delete override.parent
@@ -240,11 +247,11 @@ function togglePosition(id: string) {
 }
 
 function moveUp(id: string) {
-  moveBy(id, -1)
+  moveBy(id, getPosition(id) === 'bottom' ? -1 : 1)
 }
 
 function moveDown(id: string) {
-  moveBy(id, 1)
+  moveBy(id, getPosition(id) === 'bottom' ? 1 : -1)
 }
 
 function moveBy(id: string, offset: number) {
