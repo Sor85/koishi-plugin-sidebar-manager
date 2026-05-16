@@ -129,9 +129,17 @@
     background: var(--k-hover-bg);
   }
 
-  .activity-icon :deep(svg) {
+  .activity-icon .k-icon,
+  .activity-icon svg {
     width: 22px;
     height: 22px;
+    font-size: 22px;
+  }
+
+  .activity-icon img {
+    width: 22px;
+    height: 22px;
+    object-fit: contain;
   }
 
   .activity-main {
