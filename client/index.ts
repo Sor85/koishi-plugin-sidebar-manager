@@ -11,7 +11,8 @@ export default function (ctx: Context) {
     path: '/sidebar-manager',
     name: '侧栏管理',
     icon: 'activity:sidebar-manager',
-    order: 900,
+    order: 100,
+    position: 'bottom',
     authority: 4,
     component: SidebarManager,
   })
