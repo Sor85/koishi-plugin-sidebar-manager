@@ -1,7 +1,7 @@
 {
   "name": "koishi-plugin-sidebar-manager",
   "description": "Koishi 控制台侧栏管理插件，支持收纳、排序和调整侧栏位置。",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "type": "commonjs",
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",

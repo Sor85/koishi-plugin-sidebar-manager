@@ -132,6 +132,7 @@
 
 import { useConfig, useContext } from '@koishijs/client'
 import { computed, ref } from 'vue'
+import { clearActivityLayoutBackup, persistCurrentLayout } from './activity-layout'
 
 const SIDEBAR_MANAGER_ID = 'sidebar-manager'
 
@@ -193,6 +194,10 @@ function cleanOverride(id: string) {
   }
 }
 
+function saveCurrentLayout() {
+  persistCurrentLayout(ctx, config.value)
+}
+
 function getOrder(id: string) {
   return overrides.value[id]?.order ?? ctx.$router.pages[id]?.options.order ?? 0
 }
@@ -232,18 +237,15 @@ function toggleCollected(id: string) {
     delete override.hidden
   }
   cleanOverride(id)
+  saveCurrentLayout()
 }
 
 function togglePosition(id: string) {
-  const activity = ctx.$router.pages[id]
   const next = getPosition(id) === 'bottom' ? 'top' : 'bottom'
   const override = getOverride(id)
-  if (activity.options.position === next) {
-    delete override.position
-  } else {
-    override.position = next
-  }
+  override.position = next
   cleanOverride(id)
+  saveCurrentLayout()
 }
 
 function moveUp(id: string) {
@@ -269,9 +271,11 @@ function moveBy(id: string, offset: number) {
     override.order = (index + 1) * 100
     cleanOverride(activity.id)
   })
+  saveCurrentLayout()
 }
 
 function resetActivities() {
+  clearActivityLayoutBackup()
   config.value.activities = {}
 }
 
