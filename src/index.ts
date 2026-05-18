@@ -6,13 +6,17 @@ import {} from '@koishijs/console'
 
 export const name = 'sidebar-manager'
 
-export interface Config {}
+export interface Config {
+  debug?: boolean
+}
 
-// 声明空配置项，避免控制台将插件识别为未声明配置。
-export const Config: Schema<Config> = Schema.object({})
+// 声明插件配置项，支持打开前端布局调试日志。
+export const Config: Schema<Config> = Schema.object({
+  debug: Schema.boolean().default(false).description('输出调试日志'),
+})
 
 // 注册 Koishi Console 前端入口。
-export function apply(ctx: Context) {
+export function apply(ctx: Context, config: Config) {
   ctx.inject(['console'], (inner) => {
     inner.console.addEntry(process.env.KOISHI_BASE ? [
       process.env.KOISHI_BASE + '/dist/index.js',
@@ -20,6 +24,6 @@ export function apply(ctx: Context) {
     ] : {
       dev: resolve(__dirname, '../client/index.ts'),
       prod: resolve(__dirname, '../dist'),
-    })
+    }, () => ({ debug: !!config.debug }))
   })
 }
