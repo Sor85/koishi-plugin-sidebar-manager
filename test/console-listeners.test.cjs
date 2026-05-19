@@ -52,10 +52,17 @@ function loadIndex() {
 }
 
 const listeners = {}
-const { apply } = loadIndex()
+let injectedServices
+const plugin = loadIndex()
+const { apply } = plugin
+
+assert.deepEqual(JSON.parse(JSON.stringify(plugin.inject)), {
+  optional: ['console', 'database'],
+})
 
 apply({
   inject(services, callback) {
+    injectedServices = services
     callback({
       console: {
         addEntry() {},
@@ -70,6 +77,10 @@ apply({
   },
 }, {})
 
+assert.deepEqual(JSON.parse(JSON.stringify(injectedServices)), {
+  console: { required: true },
+  database: { required: false },
+})
 assert.deepEqual(JSON.parse(JSON.stringify(listeners['sidebar-manager/get-layout'])), { authority: 0 })
 assert.deepEqual(JSON.parse(JSON.stringify(listeners['sidebar-manager/save-layout'])), { authority: 4 })
 assert.deepEqual(JSON.parse(JSON.stringify(listeners['sidebar-manager/clear-layout'])), { authority: 4 })

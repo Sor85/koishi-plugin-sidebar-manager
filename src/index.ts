@@ -13,6 +13,11 @@ import {
 
 export const name = 'sidebar-manager'
 
+// 声明插件可选服务依赖，供 Koishi 前端和运行时识别。
+export const inject = {
+  optional: ['console', 'database'],
+}
+
 export interface Config {
   debug?: boolean
 }
@@ -40,7 +45,10 @@ export function apply(ctx: Context, config: Config) {
     primary: 'id',
   })
 
-  ctx.inject(['console'], (inner) => {
+  ctx.inject({
+    console: { required: true },
+    database: { required: false },
+  }, (inner) => {
     inner.console.addListener('sidebar-manager/get-layout', () => readActivityLayout(inner), { authority: 0 })
     inner.console.addListener('sidebar-manager/save-layout', activities => saveActivityLayout(inner, activities), { authority: 4 })
     inner.console.addListener('sidebar-manager/clear-layout', () => clearActivityLayout(inner), { authority: 4 })
