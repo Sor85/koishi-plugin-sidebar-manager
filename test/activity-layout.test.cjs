@@ -6,7 +6,7 @@ const path = require('node:path')
 const ts = require('typescript')
 const vm = require('node:vm')
 
-function loadActivityLayout(watch = () => {}) {
+function loadActivityLayout(watch = () => {}, send = async () => undefined) {
   const filename = path.resolve(__dirname, '../client/activity-layout.ts')
   const source = fs.readFileSync(filename, 'utf8')
   const output = ts.transpileModule(source, {
@@ -28,6 +28,7 @@ function loadActivityLayout(watch = () => {}) {
     },
     module,
     require(name) {
+      if (name === '@koishijs/client') return { send }
       if (name === 'vue') return { watch }
       return require(name)
     },
@@ -97,6 +98,26 @@ function persist(ids) {
   )
 
   stop()
+
+  const { initializeActivityLayout: initializeSharedLayout } = loadActivityLayout(
+    () => {},
+    async type => type === 'sidebar-manager/get-layout'
+      ? { alpha: { order: 300, position: 'top' } }
+      : undefined,
+  )
+  const sharedCtx = createContext(['alpha'])
+  let resolveSharedInit
+  sharedCtx.$loader.initTask = new Promise(resolve => resolveSharedInit = resolve)
+  const sharedConfig = {}
+  initializeSharedLayout(sharedCtx, { value: sharedConfig })
+
+  resolveSharedInit()
+  await new Promise(resolve => setImmediate(resolve))
+  assert.deepEqual(
+    JSON.parse(JSON.stringify(sharedConfig.activities)),
+    { alpha: { order: 300, position: 'top' } },
+    '初始化时应优先从服务端共享布局恢复',
+  )
 })().catch((error) => {
   console.error(error)
   process.exitCode = 1

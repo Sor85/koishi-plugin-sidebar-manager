@@ -132,7 +132,7 @@
 
 import { useConfig, useContext } from '@koishijs/client'
 import { computed, ref } from 'vue'
-import { clearActivityLayoutBackup, persistCurrentLayout } from './activity-layout'
+import { clearActivityLayoutBackup, clearSharedActivityLayout, persistCurrentLayout } from './activity-layout'
 
 const SIDEBAR_MANAGER_ID = 'sidebar-manager'
 
@@ -276,6 +276,7 @@ function moveBy(id: string, offset: number) {
 
 function resetActivities() {
   clearActivityLayoutBackup()
+  void clearSharedActivityLayout()
   config.value.activities = {}
 }
 

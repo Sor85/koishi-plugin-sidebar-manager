@@ -1,6 +1,6 @@
 // 侧栏活动布局持久化工具。
 // 将当前 Koishi Console 活动栏顺序固化到本地配置。
-import type { Config, Context } from '@koishijs/client'
+import { send, type Config, type Context } from '@koishijs/client'
 import type { Ref } from 'vue'
 
 type ActivityPosition = 'top' | 'bottom'
@@ -45,23 +45,26 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return !!value && typeof value === 'object' && !Array.isArray(value)
 }
 
+function parseActivityLayout(raw: unknown): NonNullable<Config['activities']> | undefined {
+  if (!isRecord(raw)) return
+
+  const result: NonNullable<Config['activities']> = {}
+  for (const [id, value] of Object.entries(raw)) {
+    if (!isRecord(value)) continue
+    const override: ActivityOverride = {}
+    if (typeof value.hidden === 'boolean') override.hidden = value.hidden
+    if (typeof value.parent === 'string') override.parent = value.parent
+    if (typeof value.order === 'number') override.order = value.order
+    if (value.position === 'top' || value.position === 'bottom') override.position = value.position
+    if (Object.keys(override).length) result[id] = override
+  }
+
+  return Object.keys(result).length ? result : undefined
+}
+
 function loadActivityLayoutBackup(): NonNullable<Config['activities']> | undefined {
   try {
-    const raw = JSON.parse(localStorage.getItem(ACTIVITY_LAYOUT_STORAGE_KEY) ?? 'null')
-    if (!isRecord(raw)) return
-
-    const result: NonNullable<Config['activities']> = {}
-    for (const [id, value] of Object.entries(raw)) {
-      if (!isRecord(value)) continue
-      const override: ActivityOverride = {}
-      if (typeof value.hidden === 'boolean') override.hidden = value.hidden
-      if (typeof value.parent === 'string') override.parent = value.parent
-      if (typeof value.order === 'number') override.order = value.order
-      if (value.position === 'top' || value.position === 'bottom') override.position = value.position
-      if (Object.keys(override).length) result[id] = override
-    }
-
-    return Object.keys(result).length ? result : undefined
+    return parseActivityLayout(JSON.parse(localStorage.getItem(ACTIVITY_LAYOUT_STORAGE_KEY) ?? 'null'))
   } catch {
     return
   }
@@ -80,6 +83,42 @@ export function clearActivityLayoutBackup() {
   try {
     localStorage.removeItem(ACTIVITY_LAYOUT_STORAGE_KEY)
   } catch {}
+}
+
+async function loadSharedActivityLayout(): Promise<NonNullable<Config['activities']> | undefined> {
+  try {
+    return parseActivityLayout(await send('sidebar-manager/get-layout'))
+  } catch {
+    return
+  }
+}
+
+async function backupSharedActivityLayout(config: Config) {
+  if (!hasOverrides(config)) return false
+  try {
+    return !!await send('sidebar-manager/save-layout', config.activities)
+  } catch {
+    return false
+  }
+}
+
+// 清除服务端数据库中的共享侧栏布局。
+export async function clearSharedActivityLayout() {
+  try {
+    return !!await send('sidebar-manager/clear-layout')
+  } catch {
+    return false
+  }
+}
+
+async function restoreSharedActivityLayout(config: Config) {
+  const shared = await loadSharedActivityLayout()
+  if (!shared) return false
+
+  config.activities = shared
+  backupActivityLayout(config)
+  debugLog(undefined, undefined, 'restore shared activity layout', shared)
+  return true
 }
 
 // 从侧栏管理插件自己的备份中恢复活动栏布局。
@@ -143,6 +182,7 @@ export function persistCurrentLayout(ctx: Context, config: Config) {
   }
 
   backupActivityLayout(config)
+  void backupSharedActivityLayout(config)
   debugLog(ctx, config, 'persist layout finish')
 }
 
@@ -150,9 +190,14 @@ export function persistCurrentLayout(ctx: Context, config: Config) {
 export function initializeActivityLayout(ctx: Context, config: Ref<Config>) {
   let disposed = false
 
-  ctx.$loader.initTask.then(() => {
+  ctx.$loader.initTask.then(async () => {
     if (disposed) return
-    restoreActivityLayout(config.value)
+    const restoredShared = await restoreSharedActivityLayout(config.value)
+    if (disposed) return
+    if (!restoredShared) {
+      restoreActivityLayout(config.value)
+      void backupSharedActivityLayout(config.value)
+    }
     debugLog(ctx, config.value, 'initialize activity layout')
   })
 
